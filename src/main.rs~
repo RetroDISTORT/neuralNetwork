@@ -1,0 +1,57 @@
+/*
+Create a new sample project:
+cargo new test_project && cd test_project && cargo build && cargo run
+
+Run the project:
+cargo run
+*/
+
+extern crate rand; //Used for rand
+use rand::distributions::{Normal};
+
+const INPUT_NODES: usize = 2;
+//const OUTPUT_NODES: i32 = 2;
+const HIDDEN_NODES: usize = 3;
+const BATCH_SIZE: usize = 8;
+
+fn main(){
+    //let args: Vec<String> = env::args().collect(); //[][inputs][sub][output]
+    let mut inputData = vec![vec![0.0; BATCH_SIZE]; INPUT_NODES];
+    let mut weightsMatrix = vec![vec![0.0; HIDDEN_NODES]; INPUT_NODES];
+    //rand::random();
+
+    get_data(&mut inputData);
+    get_data(&mut weightsMatrix);
+    dot_product(&mut inputData);
+    
+    println!("{:?}", weightsMatrix);
+    
+}
+
+fn dot_product(v1: &mut Vec<Vec<f64>>)
+{
+    for x in 0..v1.len(){
+	println!("{:?}",v1[x]);
+    }
+}
+
+fn get_data(v1: &mut Vec<Vec<f64>>)
+{
+    for x in 0..v1.len(){
+	for y in 0..v1[0].len(){
+	    v1[x][y] = rand::random(); 
+	}
+    }
+}
+/*
+fn dotProduct(M1: &[&f64] M1R: usize, M1C: usize, M2R: usize, M2C: usize){
+    if M1C != M2R{
+	println("WrongSize");
+	return 1;
+    }
+    
+    for n in 0..M1R {
+	for n in 
+    }
+}*/
+
