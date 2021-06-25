@@ -27,6 +27,8 @@ fn main(){
     //println!("{:?}",subtract(&mut inputData, &mut weightMatrix));
     //println!("{:?}",square(&mut inputData));
     println!("{:?}",loss(&mut inputData));
+
+    gradient_prediction
     
     //println!("{:?}", inputData);
     //println!("{:?}", weightMatrix);
