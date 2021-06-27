@@ -1,10 +1,22 @@
-/*
-Create a new sample project:
-cargo new test_project && cd test_project && cargo build && cargo run
-
-Run the project:
-cargo run
-*/
+/**
+ * Author:  Daniel Garcia (RetroDISTORT)
+ * Date:    June 27, 2021
+ * Licence: GPL-3.0 License
+ *
+ * Description:
+ *  Implementation of a variable sized Deep Feed Forward (DFF) Neural Network.
+ *
+ * Credits: 
+ *  About Medicine: https://www.youtube.com/channel/UCa_k1nTwPlKIn5YUytp4Nzw
+ *  Justin Johnson: https://github.com/jcjohnson
+ *
+ * Notes:
+ *  Create a new sample project:
+ *  cargo new test_project && cd test_project && cargo build && cargo run
+ *
+ *  Run the project:
+ *   cargo run
+ */
 
 extern crate rand; //Used for rand
 use rand::distributions::{Normal};
@@ -15,23 +27,37 @@ const HIDDEN_NODES: usize = 3;
 const BATCH_SIZE: usize = 8;
 
 fn main(){
-    //let args: Vec<String> = env::args().collect(); //[][inputs][sub][output]
-    let mut inputData = vec![vec![0.0; /*INPUT_NODES*/4]; /*BATCH_SIZE*/4];
+    //let args: Vec<String> = env::args().collect(); //[][inputs][hidden layers][neurons per layer][output]
+    let mut inputData = vec![vec![0.0; INPUT_NODES]; BATCH_SIZE];
     let mut outputData = vec![vec![0.0; OUTPUT_NODES]; BATCH_SIZE];
-    let mut weightMatrix = vec![vec![0.0; /*HIDDEN_NODES*/4]; /*INPUT_NODES*/4];
+    let mut weightMatrix_1 = vec![vec![0.0; HIDDEN_NODES]; INPUT_NODES];
+    let mut weightMatrix_2 = vec![vec![0.0; OUTPUT_NODES]; HIDDEN_NODES];
     
+    get_data(&mut weightMatrix_1);
+    get_data(&mut weightMatrix_2);
     get_data(&mut inputData);
-    get_data(&mut weightMatrix);
+    get_data(&mut weightMatrix_1);
     //println!("{:?}",dot_product(&mut inputData, &mut weightMatrix));
     //println!("{:?}",transpose(&mut inputData));
     //println!("{:?}",subtract(&mut inputData, &mut weightMatrix));
     //println!("{:?}",square(&mut inputData));
-    println!("{:?}",loss(&mut inputData));
+    //println!("{:?}",inputData);
+    //println!("{:?}",multiply(&mut inputData,2.0));
+    let mut h_values = dot_product(&mut inputData, &mut weightMatrix_1);
+    let mut h_relu = rectified_linear_unit(&mut h_values);
+
+    //println!("{:?}",inputData);
+    //println!("{:?}",weightMatrix_1);
+    let mut output_data_predictions = dot_product(&mut h_relu, &mut weightMatrix_2);
     
-    //println!("{:?}", inputData);
-    //println!("{:?}", weightMatrix);
-    //println!("{:?}", weightMatrix.len());
-    
+    let mut loss = sum(&mut square(&mut subtract(&mut output_data_predictions, &mut outputData)));
+
+    let mut gradient_predictions = subtract(&mut output_data_prediction, &mut weightMatrix);
+	//multiply(&mut inputData,2.0);
+    //gradient_w2=;
+    //gradient_h_relu=;
+    //gradient_h_values=;
+    //gradient_w1;
 }
 
 fn dot_product(v1: &mut Vec<Vec<f64>>, v2: &mut Vec<Vec<f64>>) -> Vec<Vec<f64>>
@@ -80,23 +106,35 @@ fn transpose(v1: &mut Vec<Vec<f64>>) -> Vec<Vec<f64>>
 
 fn square(v1: &mut Vec<Vec<f64>>) -> Vec<Vec<f64>>
 {
-    let mut result = vec![vec![0.0; v1.len()]; v1[0].len()];
+    let mut result = vec![vec![0.0; v1[0].len()]; v1.len()];
     
     for x in 0..result.len(){
 	for y in 0..result[0].len(){
-	    result[x][y] = v1[y][x]*v1[y][x];
+	    result[x][y] = v1[x][y]*v1[x][y];
 	}
     }
     return(result);
 }
 
-fn loss(v1: &mut Vec<Vec<f64>>) -> f64
+fn sum(v1: &mut Vec<Vec<f64>>) -> f64
 {
-    let mut result = 0.0;
+    let mut result: f64 = 0.0;
     
     for x in 0..v1.len(){
 	for y in 0..v1[0].len(){
-	    result += v1[y][x]*v1[y][x];
+	    result += v1[x][y];
+	}
+    }
+    return(result);
+}
+
+fn multiply(v1: &mut Vec<Vec<f64>>, val: f64) -> Vec<Vec<f64>>
+{
+    let mut result = vec![vec![0.0; v1[0].len()]; v1.len()];
+    
+    for x in 0..result.len(){
+	for y in 0..result[0].len(){
+	    result[x][y] = v1[x][y] * val;
 	}
     }
     return(result);
@@ -107,21 +145,24 @@ fn get_data(v1: &mut Vec<Vec<f64>>)
     let mut count = 1.0;
     for x in 0..v1.len(){
 	for y in 0..v1[0].len(){
-	    v1[x][y] = count;//rand::random();
+	    v1[x][y] = rand::random();
+	    v1[x][y] -= 0.5;
+	    v1[x][y] = v1[x][y]*3.2;
+	    //v1[x][y] = count;
 	    count+=1.0;
 	}
     }
 }
 
 
-fn rectified_linear_unit(v1: &mut Vec<Vec<f64>>)
+fn rectified_linear_unit(v1: &mut Vec<Vec<f64>>) -> Vec<Vec<f64>>
 {
+    let mut result = vec![vec![0.0; v1[0].len()]; v1.len()];
+    
     for x in 0..v1.len(){
 	for y in 0..v1[0].len(){
-	    if (v1[x][y] < 0.0)
-	    {
-		v1[x][y] = 0.0;
-	    }
+	    result[x][y] = if v1[x][y] < 0.0 { 0.0 } else { v1[x][y] };  
 	}
     }
+    return result;
 }
