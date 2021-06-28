@@ -14,7 +14,7 @@
  *  Create a new sample project:
  *  cargo new test_project && cd test_project && cargo build && cargo run
  *
- *  Run the project:
+ *  Run the project:println!("{:?}",gradient_h_values);
  *   cargo run
  */
 
@@ -37,27 +37,23 @@ fn main(){
     get_data(&mut weightMatrix_2);
     get_data(&mut inputData);
     get_data(&mut weightMatrix_1);
-    //println!("{:?}",dot_product(&mut inputData, &mut weightMatrix));
-    //println!("{:?}",transpose(&mut inputData));
-    //println!("{:?}",subtract(&mut inputData, &mut weightMatrix));
-    //println!("{:?}",square(&mut inputData));
-    //println!("{:?}",inputData);
-    //println!("{:?}",multiply(&mut inputData,2.0));
-    let mut h_values = dot_product(&mut inputData, &mut weightMatrix_1);
-    let mut h_relu = rectified_linear_unit(&mut h_values);
 
-    //println!("{:?}",inputData);
-    //println!("{:?}",weightMatrix_1);
-    let mut output_data_predictions = dot_product(&mut h_relu, &mut weightMatrix_2);
-    
-    let mut loss = sum(&mut square(&mut subtract(&mut output_data_predictions, &mut outputData)));
+    for index in 0..1000
+    { 
+	let mut h_values = dot_product(&mut inputData, &mut weightMatrix_1);
+	let mut h_relu = rectified_linear_unit(&mut h_values);
+	let mut output_data_predictions = dot_product(&mut h_relu, &mut weightMatrix_2);
+	let mut loss = sum(&mut square(&mut subtract(&mut output_data_predictions, &mut outputData)));
+	let mut gradient_predictions = multiply(&mut subtract(&mut output_data_predictions, &mut outputData), 2.0);
+	let mut gradient_w2 = dot_product(&mut transpose(&mut h_relu), &mut gradient_predictions);
+	let mut gradient_h_relu = dot_product(&mut gradient_predictions, &mut transpose(&mut weightMatrix_2));
+	let mut gradient_h_values = replace(&mut gradient_h_relu, &mut h_values); //gradient_h_values[h_values<0]=0
+	let mut gradient_w1 = dot_product(&mut transpose(&mut inputData), &mut gradient_h_values);
+	weightMatrix_1 = subtract(&mut weightMatrix_1, &mut multiply(&mut gradient_w1, 0.001));
+	weightMatrix_2 = subtract(&mut weightMatrix_2, &mut multiply(&mut gradient_w2, 0.001));
 
-    let mut gradient_predictions = subtract(&mut output_data_prediction, &mut weightMatrix);
-	//multiply(&mut inputData,2.0);
-    //gradient_w2=;
-    //gradient_h_relu=;
-    //gradient_h_values=;
-    //gradient_w1;
+	println!("{:?}", loss);
+    }
 }
 
 fn dot_product(v1: &mut Vec<Vec<f64>>, v2: &mut Vec<Vec<f64>>) -> Vec<Vec<f64>>
@@ -73,6 +69,20 @@ fn dot_product(v1: &mut Vec<Vec<f64>>, v2: &mut Vec<Vec<f64>>) -> Vec<Vec<f64>>
 		sum += v1[index][matrixIndex] * v2[matrixIndex][subIndex];
 	    }
 	    result[index][subIndex] = sum as f64;
+	}
+    }
+    return(result);
+}
+
+fn replace(v1: &mut Vec<Vec<f64>>, v2: &mut Vec<Vec<f64>>) -> Vec<Vec<f64>>
+{
+    assert!(v1.len() == v2.len() && v1[0].len() == v2[0].len()); //check if dot product can be done with the given matricies
+    
+    let mut result = vec![vec![0.0; v1[0].len()]; v1.len()];
+    
+    for x in 0..v1.len(){
+	for y in 0..v1[0].len(){
+	    result[x][y] = if v2[x][y] < 0.0 { 0.0 } else { v1[x][y] };
 	}
     }
     return(result);
